@@ -1,6 +1,6 @@
 # Lab 2 - OS Course - CCE @ Alex. Uni.
 
-## Folder Outline
+## Lab File Outline
 
 | File/ Folder Name   | Purpose |
 | ------------------- | ------- |
@@ -8,6 +8,8 @@
 | `restore.sh`        | Quarantined file restoration script |
 | `Makefile`          | Centralized setup and runner Makefile |
 | `allowlist`*        | Text file for tracking whitelisted/ restored files |
+| `directory-info.new`* | Monitored folder contents list |
+| `directory-info.last`* | Monitored folder contents list |
 | `test/`*            | Testing folder |
 | `antivirus-cron.sh` | One-shot antivirus script |
 | `service-setup.sh`  | Advanced pre-setup script for the cron job |
@@ -70,7 +72,7 @@ make test-rs
 #### Test Runs - Cleanup
 
 ```sh
-make clean
+make clean-test
 ```
 
 #### Install AV Daemon

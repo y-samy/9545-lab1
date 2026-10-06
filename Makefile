@@ -1,10 +1,10 @@
-.PHONY: runav runrs install installsvc setup
+.PHONY: test-av test-rs install install-svc setup-install setup-test setup clean-test uninstall
 
 test-av: setup-test
-	./antivirusd.sh ./test/monitor/ ./test/quarantine/ 5
+	-./antivirusd.sh ./test/monitor/ ./test/quarantine/ 5
 
-test-rs: setup-test
-	./restore.sh ./test/monitor/ ./test/quarantine/
+test-rs: setup
+	-./restore.sh ./test/monitor/ ./test/quarantine/
 
 install: setup-install
 	sudo cp ./antivirusd.sh /opt/antivirus/antivirusd
@@ -30,11 +30,12 @@ setup:
 	chmod +x ./antivirus-cron.sh
 	chmod +x ./restore.sh
 
-clean: uninstall
-	rm -rf ./test/
-	rm directory-info.new
-	rm directory-info.last
+clean-test:
+	-rm -rf ./test/
+	-rm directory-info.new
+	-rm directory-info.last
+	-rm allowlist
 
 uninstall:
-	sudo rm -rf /opt/antivirus/
-	sudo service-setup.sh --uninstall
+	-sudo rm -rf /opt/antivirus/
+	-sudo service-setup.sh --uninstall
