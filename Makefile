@@ -7,15 +7,18 @@ test-rs: setup
 	-./restore.sh ./test/monitor/ ./test/quarantine/
 
 install: setup-install
-	sudo cp ./antivirusd.sh /opt/antivirus/antivirusd
+	cp ./antivirusd.sh /opt/antivirus/antivirusd
 
 install-svc: setup-install
-	sudo cp ./antivirus-cron.sh /opt/antivirus/antivirus
-	sudo ./service-setup.sh
+	cp ./antivirus-cron.sh /opt/antivirus/antivirus
+	./service-setup.sh
+
+RUNNING_USER := $(shell whoami)
 
 setup-install: setup
 	sudo mkdir -p /opt/antivirus/quarantine/
-	sudo cp ./restore.sh /opt/antivirus/restore
+	sudo chown -R $(RUNNING_USER):$(RUNNING_USER) /opt/antivirus
+	cp ./restore.sh /opt/antivirus/restore
 
 setup-test: setup
 	mkdir -p ./test/monitor/
@@ -38,4 +41,4 @@ clean-test:
 
 uninstall:
 	-sudo rm -rf /opt/antivirus/
-	-sudo service-setup.sh --uninstall
+	-sudo ./service-setup.sh --uninstall

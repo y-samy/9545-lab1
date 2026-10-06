@@ -32,7 +32,7 @@ Precisely speaking, the project requires:
 - a POSIX-compatible shell at `/bin/sh`
 - cron installed for the `crontab` command
 - a systemd-enabled system
-- optionally `make` for using the Makefile
+- `make` for using the Makefile
 
 In case `cron` (or equivalent, ex: `cronie`) isn't installed, the scripts will attempt to install it using `apt` - which will only work on Debian-based systems.
 
@@ -45,7 +45,7 @@ The project can be adapted to work with MacOS without any additional installs:
 - cron installed for the `crontab` command ✅
 - `systemd` -> usage removed
 - a POSIX-compatible shell at `/bin/sh` ✅
-- optionally `make` (from XCode or brew) for using the Makefile
+- `make` (from XCode or brew) for using the Makefile
 
 ### Windows
 
@@ -95,12 +95,14 @@ Modify `cron.env`:
 - `MONITOR_DIR` contains the directory to monitor
 - `QUARANTINE_DIR` contains the directory to move malicious files into
 
-By default, it is set to: run at a 1min 23s interval, monitor `/opt/` and quarantine files to `/opt/antivirus/quarantine/`.
+By default, it is set to: run at a 1min 23s interval, monitor `~/Downloads/` and quarantine files to `/opt/antivirus/quarantine/`.
 
 To install, run:
 ```sh
 make install-svc
 ```
+
+This will install it as a cron job under your current user. Prepend `sudo` to the command to make it run under `root`, but make sure to modify `cron.env` to reflect this change first.
 
 #### Uninstall AV
 
@@ -173,30 +175,32 @@ sudo systemctl start cron
 
 Optionally, add your user to the `/etc/cron.allow` file
 ```sh
-(grep -v '^'"$(id -u --name)"'$' /etc/cron.allow; echo $(id -u --name)) | sudo tee /etc/cron.allow
+if [ ! -f /etc/cron.allow ]; then sudo touch /etc/cron.allow; fi
+(grep -v '^'"$(id -u --name)"'$' < /etc/cron.allow; echo $(id -u --name)) | sudo tee /etc/cron.allow >/dev/null 2>&1
 ```
 
 Prepare the installation folder at `/opt/antivirus/`
 ```sh
 sudo mkdir -p /opt/antivirus/quarantine
-sudo cp ./antivirus-cron.sh /opt/antivirus/antivirus
+sudo chmod -R $USER:$USER /opt/antivirus/
+cp ./antivirus-cron.sh /opt/antivirus/antivirus
 ```
 
 Optionally add the allow-listing behavior:
 
 ```sh
 chmod +x ./restore.sh
-sudo cp ./restore.sh /opt/antivirus/restore
+cp ./restore.sh /opt/antivirus/restore
 ```
 
 Optionally, add `/opt/antivirus/` to `PATH`.
 
 Then open the crontab editor:
 ```sh
-sudo crontab -e
+crontab -e
 ```
 
-You may omit `sudo` if the permissions of the install location allow `rwx` for your user.
+You may use `sudo` with the previous command to make the cron job run as `root`.
 
 Finally, add the cron job based on the install location (`/opt/antivirus/` in this case):
 ```sh
