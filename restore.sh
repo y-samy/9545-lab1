@@ -39,9 +39,7 @@ NEW_INFO_FILE=directory-info.new
 
 
 while true; do
-    
-    ls "$QUARANTINE_DIR" > "$NEW_INFO_FILE"
-    readarray -t FILE_LIST < "$NEW_INFO_FILE"
+    readarray -t FILE_LIST < <(ls "$QUARANTINE_DIR")
 
     if [[ ${#FILE_LIST[@]} -eq 0 ]]; then
         echo "No malicious files to review."
@@ -89,13 +87,13 @@ while true; do
 
     FILE=${FILE_LIST[$CHOICE]}
     if [[ "$ACTION" -eq 1 ]]; then
-        mv "$QUARANTINE_DIR"/"$FILE" "$DIR"/"$FILE"
+        mv "$QUARANTINE_DIR""$FILE" "$DIR""$FILE"
         echo Restored "$FILE" to "$DIR".
         echo "$FILE" >> "$ALLOWLIST_FILE"
     fi
 
     if [[ "$ACTION" -eq 2 ]]; then
-        rm "$QUARANTINE_DIR"/"$FILE"
+        rm "$QUARANTINE_DIR""$FILE"
         echo "$FILE" permanently deleted.
     fi
 
@@ -105,7 +103,7 @@ while true; do
 
     printf "Go back? Choose no to exit (Y/n) "
     read BACK
-    if [[ "$BACK" =~ ^N|No|n|no$ ]]; then
+    if [[ "$BACK" =~ ^(N|No|n|no)$ ]]; then
         exit 0
     fi
 done

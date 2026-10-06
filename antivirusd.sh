@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-
 SCRIPT_NAME=${0##*/}
 
 if [[ $# -lt 3 ]]; then
@@ -41,10 +39,10 @@ DIR=${1%/}/
 QUARANTINE_DIR=${2%/}/
 INTERVAL=$3
 
-BLACKLIST_EXT=(".exe" ".bat" ".vbs" ".scr" ".ps1")
-BLACKLIST_CONTENT=("virus" "trojan" "malware" "worm" "ransomware")
-BLACKLIST_EXT_REGEX=$(IFS="|"; echo ${BLACKLIST_EXT[*]})
-BLACKLIST_CONTENT_REGEX=$(IFS="|"; echo ${BLACKLIST_CONTENT[*]})
+FLAGGED_EXT=("exe" "bat" "vbs" "scr" "ps1")
+FLAGGED_CONTENT=("virus" "trojan" "malware" "worm" "ransomware")
+FLAGGED_EXT_REGEX="\.($(IFS="|"; echo "${FLAGGED_EXT[*]}"))$"
+FLAGGED_CONTENT_REGEX="($(IFS="|"; echo "${FLAGGED_CONTENT[*]}"))"
 
 ALLOWLIST_FILE=allowlist
 OLD_INFO_FILE=directory-info.last
@@ -55,23 +53,23 @@ ls -l "$DIR" > "$OLD_INFO_FILE"
 while true; do
     sleep "$INTERVAL"
     ls -l "$DIR" > "$NEW_INFO_FILE"
-    diff -q "$OLD_INFO_FILE" "$NEW_INFO_FILE" 2>&1 /dev/null
-    if [[ $? -eq 0 ]]; then
-        EXT_FILES=$(ls "$DIR" | grep "$BLACKLIST_EXT_REGEX")
-        for file in "$EXT_FILES"; do
+    diff -q "$OLD_INFO_FILE" "$NEW_INFO_FILE" >/dev/null 2>&1
+    if [[ $? -eq 1 ]]; then
+        readarray -t EXT_FILES < <(ls "$DIR" | grep -E "$FLAGGED_EXT_REGEX")
+        for file in "${EXT_FILES[@]}"; do
             if [[ -r "$ALLOWLIST_FILE" ]]; then
-                if grep -qx "$file" < "$ALLOWLIST_FILE"; then continue; fi
+                if grep -Fqx "$file" < "$ALLOWLIST_FILE"; then continue; fi
             fi
             cp "$DIR""$file" "$QUARANTINE_DIR""$file"
             rm "$DIR""$file"
             echo "$file" is malicious and it is DELETED
         done
-        FILES=$(ls "$DIR")
-        for file in "$FILES"; do
+        readarray -t FILES < <(ls "$DIR")
+        for file in "${FILES[@]}"; do
             if [[ -r "$ALLOWLIST_FILE" ]]; then
-                if grep -qx "$file" < "$ALLOWLIST_FILE"; then continue; fi
+                if grep -Fqx "$file" < "$ALLOWLIST_FILE"; then continue; fi
             fi
-            if grep -q "$BLACKLIST_CONTENT_REGEX" < "$file"; then
+            if grep -Ewq "$FLAGGED_CONTENT_REGEX" < "$DIR""$file"; then
                 cp "$DIR""$file" "$QUARANTINE_DIR""$file"
                 rm "$DIR""$file"
                 echo "$file" is malicious and it is DELETED
