@@ -72,7 +72,7 @@ while true; do
             if [[ -r "$ALLOWLIST_FILE" ]]; then
                 if grep -Fqx "$file" < "$ALLOWLIST_FILE"; then continue; fi
             fi
-            if grep -Ewq "$FLAGGED_CONTENT_REGEX" < "$DIR""$file"; then
+            if grep -Eqi "$FLAGGED_CONTENT_REGEX" < "$DIR""$file"; then
                 cp "$DIR""$file" "$QUARANTINE_DIR""$file"
                 rm "$DIR""$file"
                 echo "$file" is malicious and it is DELETED
