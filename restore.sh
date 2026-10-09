@@ -50,19 +50,19 @@ while true; do
 
     # File listing
     for (( i = 0; i < ${#FILE_LIST[@]}; i++ )); do
-        echo $i: "${FILE_LIST[$i]}"
+        echo $(($i + 1)): "${FILE_LIST[$i]}"
     done
 
     # File picker validation
     CHOICE=""
     while [[ -z "$CHOICE" ]]; do
         if [[ ${#FILE_LIST[@]} -eq 1 ]]; then
-            printf "Choose file (0): "
+            printf "Choose file (1): "
         else
-            printf "Choose file (0-%s): " $(( ${#FILE_LIST[@]} - 1 ))
+            printf "Choose file (1-%s): " ${#FILE_LIST[@]}
         fi
         read CHOICE
-        if [[ ! "$CHOICE" =~ ^[0-9]+$ ]] || [[ $CHOICE -ge ${#FILE_LIST[@]} ]] || [[ $CHOICE -lt 0 ]]; then
+        if [[ ! "$CHOICE" =~ ^[0-9]+$ ]] || [[ $CHOICE -gt ${#FILE_LIST[@]} ]] || [[ $CHOICE -le 0 ]]; then
             CHOICE=""
             printf "\033[A\33[2K"
             continue
@@ -70,9 +70,10 @@ while true; do
     done
 
     # Actions
-    echo "Input 1: Restore this file back into" "$DIR" "(it was a false positive)"
-    echo "Input 2: Permanently delete this file from" "$QUARANTINE_DIR" "(it was genuinely malicious)"
-    echo "Input 3: Leave this file as-is and go back to the list"
+    echo "Actions"
+    echo "1: Restore this file back into" "$DIR" "(it was a false positive)"
+    echo "2: Permanently delete this file from" "$QUARANTINE_DIR" "(it was genuinely malicious)"
+    echo "3: Leave this file as-is and go back to the list"
 
     ACTION=""
     while [[ -z "$ACTION" ]]; do
@@ -85,6 +86,7 @@ while true; do
         fi
     done
 
+    CHOICE=$(($CHOICE - 1))
     FILE=${FILE_LIST[$CHOICE]}
     if [[ "$ACTION" -eq 1 ]]; then
         mv "$QUARANTINE_DIR""$FILE" "$DIR""$FILE"
